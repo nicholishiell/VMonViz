@@ -5,7 +5,7 @@ import numpy as np
 
 from pprint import pprint
 from rcsdb.connection import session as rcsdb_session
-from rcsdb.models import VM, VMLoad, GPULoad
+from rcsdb.models import VM, VMLoad, GPULoad, Server
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -15,8 +15,12 @@ def get_vms() -> list[VM]:
     vm_list = []
 
     for vm in vms:
+
+        server = rcsdb_session.query(Server).filter(Server.hostname==vm.server_hostname).first()
+
         vm_list.append({'hostname': vm.hostname,
                        'gpu': vm.gpu,
+                       'gpu_ram': server.gpu_ram,
                        'id': vm.id,
                        'ip': vm.ip,
                        'ram': vm.ram,
@@ -81,7 +85,6 @@ def plot_vm_load_data(vm, load_data):
 
     plt.close()
 
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def plot_gpu_load_data(vm, load_data):
@@ -118,43 +121,44 @@ def plot_gpu_load_data(vm, load_data):
 
 def main():
     vms = get_vms()
+
     print(f"Found {len(vms)} VMs")
     now = datetime.datetime.now()
     first_of_month = now.replace(day=1)
     print(f"Fetching data since: {first_of_month}")
 
     for vm in vms:
-        print(f"VM ID: {vm['id']}, Hostname: {vm['hostname']}, IP: {vm['ip']}, GPU: {vm['gpu']}")
+        print(f"VM ID: {vm['id']}, Hostname: {vm['hostname']}, IP: {vm['ip']}, GPU: {vm['gpu']} GPU-RAM: {vm['gpu_ram']}")
 
-        gpu_load_data = []
-        if vm['gpu']:
-            gpu_load = get_gpu_load(vm['id'], first_of_month)
+        # gpu_load_data = []
+        # if vm['gpu']:
+        #     gpu_load = get_gpu_load(vm['id'], first_of_month)
 
-            for load in gpu_load:
-                gpu_load_data.append( (load.timestamp,
-                                       load.core_use,
-                                       load.mem_use) )
+        #     for load in gpu_load:
+        #         gpu_load_data.append( (load.timestamp,
+        #                                load.core_use,
+        #                                load.mem_use) )
 
-            if len(gpu_load_data) > 0:
-                plot_gpu_load_data(vm, gpu_load_data)
+        #     if len(gpu_load_data) > 0:
+        #         plot_gpu_load_data(vm, gpu_load_data)
 
 
-        vm_load = get_vm_load(vm['id'], first_of_month)
-        vm_load_data = []
-        for load in vm_load:
+        # vm_load = get_vm_load(vm['id'], first_of_month)
+        # vm_load_data = []
+        # for load in vm_load:
 
-            # I think this was inverted in the original code
-            # mem_percent_used = 1. - load.memfree / 1024 / vm['ram']
-            mem_percent_used = load.memfree / 1024 / vm['ram']
+        #     # I think this was inverted in the original code
+        #     # mem_percent_used = 1. - load.memfree / 1024 / vm['ram']
+        #     mem_percent_used = load.memfree / 1024 / vm['ram']
 
-            disk_percent_used = 1. - load.diskfree / 1024 / vm['disk_size']
-            vm_load_data.append( (load.timestamp,
-                               load.load,
-                               mem_percent_used,
-                               disk_percent_used) )
+        #     disk_percent_used = 1. - load.diskfree / 1024 / vm['disk_size']
+        #     vm_load_data.append( (load.timestamp,
+        #                        load.load,
+        #                        mem_percent_used,
+        #                        disk_percent_used) )
 
-        if len(vm_load_data) > 0:
-            plot_vm_load_data(vm, vm_load_data)
+        # if len(vm_load_data) > 0:
+        #     plot_vm_load_data(vm, vm_load_data)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
