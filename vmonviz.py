@@ -19,13 +19,13 @@ def get_vms() -> list[VM]:
         server = rcsdb_session.query(Server).filter(Server.hostname==vm.server_hostname).first()
 
         vm_list.append({'hostname': vm.hostname,
-                        'gpu': vm.gpu,
-                        'gpu_ram': server.gpu_ram,
-                        'id': vm.id,
-                        'ip': vm.ip,
-                        'ram': vm.ram,
-                        'n_cores': vm.cores,
-                        'disk_size': vm.root_disk_size})
+                'gpu': vm.gpu,
+                'gpu_ram': server.gpu_ram if server.gpu_ram is not None else 0,
+                'id': vm.id,
+                'ip': vm.ip,
+                'ram': vm.ram,
+                'n_cores': vm.cores,
+                'disk_size': vm.root_disk_size})
 
     return vm_list
 
