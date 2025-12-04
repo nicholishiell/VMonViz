@@ -1,3 +1,11 @@
 gpu_loads/*.png
 vm_loads/*.png
 .venv_vmonviz/
+
+# Python package artifacts
+*.egg-info/
+dist/
+build/
+__pycache__/
+*.pyc
+*.pyo
